@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Timers;
 using System.Windows.Forms;
 
 namespace JesseeSoft.Common
@@ -44,9 +45,10 @@ namespace JesseeSoft.Common
         /// <param name="message">消息文本</param>
         /// <param name="caption">消息框标题</param>
         /// <param name="attachMessage">附加消息</param>
-        public static DialogResult Show(string message, string caption = null, string attachMessage = null)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption = null, string attachMessage = null, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
-            return ShowCore(message, caption, attachMessage, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
+            return ShowCore(message, caption, attachMessage, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, defaultCountDown);
         }
 
         /*下面这仨弄成重载而不是可选方法是为了避免不必要的参数检查*/
@@ -58,11 +60,12 @@ namespace JesseeSoft.Common
         /// <param name="caption">消息框标题</param>
         /// <param name="attachMessage">附加消息</param>
         /// <param name="buttons">按钮组合</param>
-        public static DialogResult Show(string message, string caption, string attachMessage, MessageBoxButtons buttons)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption, string attachMessage, MessageBoxButtons buttons, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
             if (!Enum.IsDefined(typeof(MessageBoxButtons), buttons)) { throw new InvalidEnumArgumentException(InvalidButtonExString); }
 
-            return ShowCore(message, caption, attachMessage, buttons, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
+            return ShowCore(message, caption, attachMessage, buttons, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, defaultCountDown);
         }
 
         /// <summary>
@@ -73,12 +76,13 @@ namespace JesseeSoft.Common
         /// <param name="attachMessage">附加消息</param>
         /// <param name="buttons">按钮组合</param>
         /// <param name="icon">图标</param>
-        public static DialogResult Show(string message, string caption, string attachMessage, MessageBoxButtons buttons, MessageBoxIcon icon)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption, string attachMessage, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
             if (!Enum.IsDefined(typeof(MessageBoxButtons), buttons)) { throw new InvalidEnumArgumentException(InvalidButtonExString); }
             if (!Enum.IsDefined(typeof(MessageBoxIcon), icon)) { throw new InvalidEnumArgumentException(InvalidIconExString); }
 
-            return ShowCore(message, caption, attachMessage, buttons, icon, MessageBoxDefaultButton.Button1);
+            return ShowCore(message, caption, attachMessage, buttons, icon, MessageBoxDefaultButton.Button1, defaultCountDown);
         }
 
         /// <summary>
@@ -90,13 +94,14 @@ namespace JesseeSoft.Common
         /// <param name="buttons">按钮组合</param>
         /// <param name="icon">图标</param>
         /// <param name="defaultButton">默认按钮</param>
-        public static DialogResult Show(string message, string caption, string attachMessage, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption, string attachMessage, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
             if (!Enum.IsDefined(typeof(MessageBoxButtons), buttons)) { throw new InvalidEnumArgumentException(InvalidButtonExString); }
             if (!Enum.IsDefined(typeof(MessageBoxIcon), icon)) { throw new InvalidEnumArgumentException(InvalidIconExString); }
             if (!Enum.IsDefined(typeof(MessageBoxDefaultButton), defaultButton)) { throw new InvalidEnumArgumentException(InvalidDfButtonExString); }
 
-            return ShowCore(message, caption, attachMessage, buttons, icon, defaultButton);
+            return ShowCore(message, caption, attachMessage, buttons, icon, defaultButton, defaultCountDown);
         }
 
         /********传入异常的重载********/
@@ -107,9 +112,10 @@ namespace JesseeSoft.Common
         /// <param name="message">消息文本</param>
         /// <param name="caption">消息框标题</param>
         /// <param name="exception">异常实例</param>
-        public static DialogResult Show(string message, string caption, Exception exception)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption, Exception exception, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
-            return Show(message, caption, exception == null ? string.Empty : exception.ToString());
+            return Show(message, caption, exception == null ? string.Empty : exception.ToString(), defaultCountDown);
         }
 
         /// <summary>
@@ -119,9 +125,10 @@ namespace JesseeSoft.Common
         /// <param name="caption">消息框标题</param>
         /// <param name="exception">异常实例</param>
         /// <param name="buttons">按钮组合</param>
-        public static DialogResult Show(string message, string caption, Exception exception, MessageBoxButtons buttons)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption, Exception exception, MessageBoxButtons buttons, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
-            return Show(message, caption, exception == null ? string.Empty : exception.ToString(), buttons);
+            return Show(message, caption, exception == null ? string.Empty : exception.ToString(), buttons, defaultCountDown);
         }
 
         /// <summary>
@@ -132,9 +139,10 @@ namespace JesseeSoft.Common
         /// <param name="exception">异常实例</param>
         /// <param name="buttons">按钮组合</param>
         /// <param name="icon">图标</param>
-        public static DialogResult Show(string message, string caption, Exception exception, MessageBoxButtons buttons, MessageBoxIcon icon)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption, Exception exception, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
-            return Show(message, caption, exception == null ? string.Empty : exception.ToString(), buttons, icon);
+            return Show(message, caption, exception == null ? string.Empty : exception.ToString(), buttons, icon, defaultCountDown);
         }
 
         /// <summary>
@@ -146,23 +154,22 @@ namespace JesseeSoft.Common
         /// <param name="buttons">按钮组合</param>
         /// <param name="icon">图标</param>
         /// <param name="defaultButton">默认按钮</param>
-        public static DialogResult Show(string message, string caption, Exception exception, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton)
+        /// <param name="defaultCountDown">默认按钮倒计时时间</param>
+        public static DialogResult Show(string message, string caption, Exception exception, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton, MessageBoxDefaultCountDown defaultCountDown = MessageBoxDefaultCountDown.None)
         {
-            return Show(message, caption, exception == null ? string.Empty : exception.ToString(), buttons, icon, defaultButton);
+            return Show(message, caption, exception == null ? string.Empty : exception.ToString(), buttons, icon, defaultButton, defaultCountDown);
         }
 
         #endregion
 
         //内部方法，不检查参数有效性
-        private static DialogResult ShowCore(string message, string caption, string attachMessage, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton)
+        private static DialogResult ShowCore(string message, string caption, string attachMessage, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton, MessageBoxDefaultCountDown defaultCountDown)
         {
-            using (MessageForm f = new MessageForm(message, caption, buttons, icon, defaultButton, attachMessage, EnableAnimate, EnableSound))
+            using (MessageForm f = new MessageForm(message, caption, buttons, icon, defaultButton, attachMessage, EnableAnimate, EnableSound, defaultCountDown))
             {
                 return f.ShowDialog();
             }
         }
-
-
         /*----------------
          下面是消息窗体相关
          ---------------*/
@@ -342,6 +349,8 @@ namespace JesseeSoft.Common
             /// </summary>
             const int MaxClientWidth = 700;
 
+            string messageSound;//存储供PlaySound API使用的系统消息音别名，在ProcessIcon中赋值，OnShown中取用
+
             int expandHeight;
             /// <summary>
             /// 详细信息区展开高度
@@ -381,6 +390,26 @@ namespace JesseeSoft.Common
             /// </summary>
             private MessageBoxDefaultButton DefaultButton { get; set; }
 
+            /// <summary>
+            /// 默认倒计时秒数
+            /// </summary>
+            private MessageBoxDefaultCountDown DefaultCountdown { get; set; }
+
+            /// <summary>
+            /// 默认倒计时秒数
+            /// </summary>
+            private System.Timers.Timer timerCountDown { get; set; }
+
+            /// <summary>
+            /// 默认倒计时秒
+            /// </summary>
+            private System.Timers.Timer timerSecond { get; set; }
+
+            /// <summary>
+            /// 默认倒计时剩余时间（秒）
+            /// </summary>
+            private int timerSecondLeft { get; set; }
+
             #endregion
 
             /// <summary>
@@ -403,7 +432,7 @@ namespace JesseeSoft.Common
             /// <summary>
             /// 创建消息窗体
             /// </summary>
-            public MessageForm(string message, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton, string attachMessage, bool enableAnimate, bool enableSound)
+            public MessageForm(string message, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton, string attachMessage, bool enableAnimate, bool enableSound, MessageBoxDefaultCountDown defaultCountdown)
                 : this(enableAnimate)
             {
                 this.lbMsg.Text = message;
@@ -413,15 +442,25 @@ namespace JesseeSoft.Common
                 this.MessageIcon = icon;
                 this.DefaultButton = defaultButton;
                 this.UseSound = enableSound;
+                this.DefaultCountdown = defaultCountdown;
             }
 
             #region 重写基类方法
 
             protected override void OnLoad(EventArgs e)
             {
-                //须在计算各种尺寸前搞掂
-                ProcessIcon();
-                ProcessButtons();
+                //须在计算各种尺寸前搞定
+                this.ProcessIcon();
+                this.ProcessButtons();
+                this.ProcessCountDown();
+                if (this.timerCountDown != null)
+                {
+                    this.timerCountDown.Enabled = true;
+                }
+                if (this.timerSecond != null)
+                {
+                    this.timerSecond.Enabled = true;
+                }
 
                 this.MinimumSize = SizeFromClientSize(new Size(GetPanelButtonMinWidth(), GetClientMinHeight()));
 
@@ -438,10 +477,15 @@ namespace JesseeSoft.Common
                 if ((dfBtn = this.AcceptButton as Button) != null)
                 {
                     dfBtn.Focus();
+                    if (this.timerSecondLeft > 0)
+                    {
+                        string btnOldText = dfBtn.Text.LastIndexOf(" ") == -1 ? dfBtn.Text : dfBtn.Text.Substring(0, dfBtn.Text.IndexOf(" "));
+                        dfBtn.Text = btnOldText + " " + this.timerSecondLeft + "s";
+                    }
                 }
 
                 //播放消息提示音
-                if (this.UseSound) { PlayMessageSound(this.MessageIcon); }
+                if (this.UseSound) { PlaySystemSound(this.messageSound); }
 
                 base.OnShown(e);
             }
@@ -496,9 +540,9 @@ namespace JesseeSoft.Common
                 }
                 else
                 {
-                    ExpandHeight = plAttachZone.Height;//记忆展开高度
+                    ExpandHeight = plAttachZone.Height;//为再次展开记忆高度
                     plAttachZone.Visible = false;
-                    ChangeFormHeight(-ExpandHeight);
+                    ChangeFormHeight(-plAttachZone.Height);//收起时直接取pl高度，不要取ExpandHeight
 
                     plButtonsZone.SendToBack();
 
@@ -540,11 +584,11 @@ namespace JesseeSoft.Common
                 switch (MessageButtons) //老实用case，可读点
                 {
                     case MessageBoxButtons.AbortRetryIgnore:
-                        button1.Text = "中止(&A)";
+                        button1.Text = "中止(&A)"; 
                         button1.Tag = DialogResult.Abort;
                         button2.Text = "重试(&R)";
                         button2.Tag = DialogResult.Retry;
-                        button3.Text = "忽略(&I)";
+                        button3.Text = "忽略(&I)"; 
                         button3.Tag = DialogResult.Ignore;
                         break;
                     case MessageBoxButtons.OK:
@@ -613,9 +657,45 @@ namespace JesseeSoft.Common
             }
 
             /// <summary>
-            /// 处理图标
+            /// 处理按钮相关
             /// </summary>
-            /// <remarks>之所以不在此处顺便把Sound处理了是为了松耦合</remarks>
+            private void ProcessCountDown()
+            {
+                this.timerSecondLeft = (int)this.DefaultCountdown;
+                if (this.DefaultCountdown == MessageBoxDefaultCountDown.None)
+                {
+                    return;
+                }
+                this.timerSecondLeft = (int)this.DefaultCountdown;
+                this.timerCountDown = new System.Timers.Timer();
+                this.timerCountDown.Elapsed += this.timerCountdownTrigger;
+                this.timerCountDown.Interval = this.timerSecondLeft * 1000;
+
+                this.timerSecond = new System.Timers.Timer();
+                this.timerSecond.Interval = 1000;
+                this.timerSecond.Elapsed += this.timerSecondTrigger;
+            }
+
+            private void timerCountdownTrigger(object sender, ElapsedEventArgs e)
+            {
+                this.timerSecond.Enabled = false;
+                this.timerCountDown.Enabled = false;
+                this.AcceptButton.PerformClick();
+            }
+
+            private void timerSecondTrigger(object sender, ElapsedEventArgs e)
+            {
+                this.timerSecondLeft -= 1;
+                Button dfBtn;
+                if ((dfBtn = this.AcceptButton as Button) != null)
+                {
+                    string btnOldText = dfBtn.Text.LastIndexOf(" ") == -1 ? dfBtn.Text : dfBtn.Text.Substring(0, dfBtn.Text.IndexOf(" "));
+                    dfBtn.Text = btnOldText + " " + this.timerSecondLeft + "s";
+                }
+            }
+            /// <summary>
+            /// 处理图标（含声音）
+            /// </summary>
             private void ProcessIcon()
             {
                 switch (MessageIcon)
@@ -623,24 +703,29 @@ namespace JesseeSoft.Common
                     //MessageBoxIcon.Information同样
                     case MessageBoxIcon.Asterisk:
                         lbMsg.Icon = SystemIcons.Information;
+                        messageSound = "SystemAsterisk";
                         break;
 
                     //MessageBoxIcon.Hand、MessageBoxIcon.Stop同样
                     case MessageBoxIcon.Error:
                         lbMsg.Icon = SystemIcons.Error;
+                        messageSound = "SystemHand";
                         break;
 
                     //MessageBoxIcon.Warning同样
                     case MessageBoxIcon.Exclamation:
                         lbMsg.Icon = SystemIcons.Warning;
+                        messageSound = "SystemExclamation";
                         break;
 
                     case MessageBoxIcon.Question:
                         lbMsg.Icon = SystemIcons.Question;
+                        messageSound = "SystemAsterisk";//Question原本是没声音的，此实现让它蹭一下Information的
                         break;
 
-                    default:
+                    default: //MessageBoxIcon.None
                         lbMsg.Icon = null;
+                        messageSound = "SystemDefault";
                         break;
                 }
             }
@@ -659,31 +744,13 @@ namespace JesseeSoft.Common
             private int GetPanelButtonMinWidth()
             {
                 int r = 20 /*左右Padding*/, visibleCount = -1 /*因为两个以上才会有间距*/;
-                if (ckbToggle.Visible)
-                {
-                    r += ckbToggle.Width;
-                    visibleCount++;
-                }
-                if (button1.Visible)
-                {
-                    r += button1.Width * 3;
-                    visibleCount += 3;
-                }
-                else if (button2.Visible)
-                {
-                    r += button2.Width * 2;
-                    visibleCount += 2;
-                }
-                else
-                {
-                    r += button3.Width;
-                    visibleCount++;
-                }
 
-                if (visibleCount != -1)
-                {
-                    r += visibleCount * 6;
-                } //按钮间距
+                if (ckbToggle.Visible) { r += ckbToggle.Width; visibleCount++; }
+                if (button1.Visible) { r += button1.Width * 3; visibleCount += 3; }
+                else if (button2.Visible) { r += button2.Width * 2; visibleCount += 2; }
+                else { r += button3.Width; visibleCount++; }
+
+                if (visibleCount != -1) { r += visibleCount * 6; } //按钮间距
 
                 return r;
             }
@@ -722,39 +789,10 @@ namespace JesseeSoft.Common
             /// <summary>
             /// 播放系统事件声音
             /// </summary>
-            /// <remarks>之所以不用MessageBeep API是因为这货在NT6上不出声，所以用PlaySound代替</remarks>
-            private static void PlayMessageSound(MessageBoxIcon msgType)
+            /// <remarks>之所以不用MessageBeep API是因为这货在srv08上不出声，所以用PlaySound代替</remarks>
+            private static void PlaySystemSound(string soundAlias)
             {
-                string eventString;
-                switch (msgType)
-                {
-                    case MessageBoxIcon.None:
-                        eventString = "SystemDefault";
-                        break;
-
-                    //Question原本是没声音的，此实现让它蹭一下Information的
-                    case MessageBoxIcon.Question:
-
-                    //MessageBoxIcon.Information同样
-                    case MessageBoxIcon.Asterisk:
-                        eventString = "SystemAsterisk";
-                        break;
-
-                    //MessageBoxIcon.Hand、MessageBoxIcon.Stop同样
-                    case MessageBoxIcon.Error:
-                        eventString = "SystemHand";
-                        break;
-
-                    //MessageBoxIcon.Warning同样
-                    case MessageBoxIcon.Exclamation:
-                        eventString = "SystemExclamation";
-                        break;
-
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                PlaySound(eventString, IntPtr.Zero, 0x10000 /*SND_ALIAS*/| 0x1 /*SND_ASYNC*/);
+                PlaySound(soundAlias, IntPtr.Zero, 0x10000 /*SND_ALIAS*/| 0x1 /*SND_ASYNC*/);
             }
 
             [DllImport("winmm.dll", CharSet = CharSet.Auto)]
@@ -816,7 +854,7 @@ namespace JesseeSoft.Common
                 {
                     get
                     {
-                        return (this.Icon != null ? Math.Max(this.Icon.Height, this.Font.Height) : this.Font.Height) + Padding.Vertical;
+                        return (this.Icon != null ? Math.Max(this.Icon.Height, this.FontHeight) : this.FontHeight) + Padding.Vertical;
                     }
                 }
 
@@ -858,16 +896,16 @@ namespace JesseeSoft.Common
                     Size wellSize = Size.Empty;
                     if (!string.IsNullOrEmpty(this.Text))
                     {
-                        //用指定宽度测量文本面积
-                        Size size = TextRenderer.MeasureText(this.Text, this.Font, new Size(proposedSize.Width - reservedWidth, 0), textFlags);
-                        int lineHeight = TextRenderer.MeasureText(" ", this.Font, new Size(int.MaxValue, 0), textFlags).Height;//单行高，Font.Height不靠谱
-
+                        //优化文本块宽高比例
+                        Size size = TextRenderer.MeasureText(this.Text, this.Font, new Size(proposedSize.Width - reservedWidth, 0), textFlags);//用指定宽度测量文本面积
                         wellSize = Convert.ToSingle(size.Width) / size.Height > PreferredScale //过于宽扁的情况
                             ? Size.Ceiling(GetSameSizeWithNewScale(size, PreferredScale))
                             : size;
 
                         //凑齐整行高，确保尾行显示
-                        wellSize.Height = Convert.ToInt32(Math.Ceiling(wellSize.Height / Convert.ToDouble(lineHeight))) * lineHeight;
+                        int lineHeight = TextRenderer.MeasureText(" ", this.Font, new Size(int.MaxValue, 0), textFlags).Height;//单行高，Font.Height不靠谱
+                        int differ;
+                        wellSize.Height += (differ = wellSize.Height % lineHeight) == 0 ? 0 : (lineHeight - differ);
                     }
                     if (this.Icon != null)
                     {
@@ -1075,6 +1113,9 @@ SUVORK5CYII=";
 
                 protected override void WndProc(ref Message m)
                 {
+                    //忽略鼠标双击消息，WM_LBUTTONDBLCLK
+                    if (m.Msg == 0x203) { return; }
+
                     //有节操的响应鼠标动作
                     if ((m.Msg == 0x201 || m.Msg == 0x202) && (!this.Enabled || !this.Visible))
                     {
@@ -1250,5 +1291,11 @@ SUVORK5CYII=";
 
             #endregion
         }
+        #region 倒计时默认值
+        public enum MessageBoxDefaultCountDown
+        {
+            None = 0, FiveSeconds = 5, TenSeconds = 10, TwentySeconds = 20, ThirtySeconds = 30
+        }
+        #endregion
     }
 }
